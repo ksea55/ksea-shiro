@@ -106,11 +106,13 @@
         <!--
             配置那些页面需要受保护
             以及访问这些页面需要的权限
-            anno表示可以被匿名访问
+            anno表示可以被匿名访问 既不需要登录也可以访问
             authc 表示必须被认证即登录才可以访问的页面
         -->
         <property name="filterChainDefinitions">
             <value>
+                /login/index=anon
+                /login/doLogin=anon
                 /favicon.ico = anon
                 /logo.png = anon
                 /shiro.css = anon

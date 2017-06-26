@@ -8,22 +8,14 @@ import org.apache.shiro.realm.Realm;
 
 /**
  * Created by ksea on 2017/6/26.
+ * 如果只是认证的话只需要继承AuthenticatingRealm 并重写doGetAuthenticationInfo方法
  */
-public class ShiroRealm implements Realm {
+public class ShiroRealm extends  AuthenticatingRealm {
 
 
     @Override
-    public String getName() {
-        return null;
-    }
-
-    @Override
-    public boolean supports(AuthenticationToken authenticationToken) {
-        return false;
-    }
-
-    @Override
-    public AuthenticationInfo getAuthenticationInfo(AuthenticationToken authenticationToken) throws AuthenticationException {
+    protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken) throws AuthenticationException {
+        System.out.println(authenticationToken.getPrincipal()+"---"+authenticationToken.hashCode());
         return null;
     }
 }
