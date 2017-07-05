@@ -1,8 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd">
 
+    <!--加载properties文件-->
+    <context:property-placeholder location="classpath:jdbc.properties"/>
+
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="driverClass" value="${jdbc-driver}"/>
+        <property name="jdbcUrl" value="${jdbc-url}"/>
+        <property name="user" value="${jdbc-user}"/>
+        <property name="password" value="${jdbc-password}"/>
+    </bean>
+
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
 
     <!-- =========================================================
         1:Shiro核心组件，SercurityManager
@@ -38,7 +55,26 @@
          Many other realm implementations can be used too (PropertiesRealm,
          LdapRealm, etc. -->
     <bean id="jdbcRealm" class="com.ksea.shiro.realms.ShiroRealm">
+        <!--  <property name="name" value="jdbcRealm"/>
+          <property name="dataSource" ref="dataSource"/>-->
+        <!--
+            加密方式
+            Shiro提供了base64和16进制字符串编码/解码的API支持，方便一些编码解码操作。Shiro内部的一些数据的存储/表示都使用了base64和16进制字符串。
 
+        散列算法
+散列算法一般用于生成数据的摘要信息，是一种不可逆的算法，一般适合存储密码之类的数据，常见的散列算法如MD5、SHA等。
+一般进行散列时最好提供一个salt（盐），比如加密密码“admin”，产生的散列值是“21232f297a57a5a743894a0e4a801fc3”，
+可以到一些md5解密网站很容易的通过散列值得到密码“admin”，即如果直接对密码进行散列相对来说破解更容易，
+此时我们可以加一些只有系统知道的干扰数据，如用户名和ID（即盐）；这样散列的对象是“密码+用户名+ID”，这样生成的散列值相对来说更难破解。
+        -->
+        <property name="credentialsMatcher">
+            <bean class="org.apache.shiro.authc.credential.HashedCredentialsMatcher">
+                <property name="hashAlgorithmName" value="MD5"/>
+                <property name="hashIterations" value="1024"/>
+                <!-- true means hex encoded:十六进制加密, false means base64 encoded:基于64位加密 -->
+                <property name="storedCredentialsHexEncoded" value="false"/>
+            </bean>
+        </property>
     </bean>
 
     <!-- =========================================================
@@ -113,6 +149,7 @@
             <value>
                 /login/index=anon
                 /login/doLogin=anon
+                /login/logout=logout
                 /favicon.ico = anon
                 /logo.png = anon
                 /shiro.css = anon

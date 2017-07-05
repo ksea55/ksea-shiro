@@ -12,5 +12,7 @@
 </head>
 <body>
 login page
+
+<a href="${pageContext.request.contextPath}/login/logout">login out</a>
 </body>
 </html>

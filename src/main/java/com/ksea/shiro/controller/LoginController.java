@@ -31,13 +31,20 @@ public class LoginController {
             Subject subject = SecurityUtils.getSubject();
             //组装token
             UsernamePasswordToken token = new UsernamePasswordToken(userName, password);
-            System.out.println("token:"+token.hashCode());
+            System.out.println("token:" + token.hashCode());
             subject.login(token);
         } catch (AuthenticationException e) {
             e.printStackTrace();
         }
 
+        /**
+         * 注意在springmvc中controller to controller之间的跳转，在redirect:后面必须加上 "/"
+          */
+        return "redirect:/home/index";
+    }
 
-        return "redirect:home/index";
+    @RequestMapping(value = "logout", method = RequestMethod.GET)
+    public String logout() {
+        return "redirect:login/index";
     }
 }
