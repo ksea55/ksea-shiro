@@ -32,7 +32,36 @@
         <property name="cacheManager" ref="cacheManager"/>
         <!-- Single realm app.  If you have multiple realms, use the 'realms' property instead. -->
         <!--<property name="sessionMode" value="native"/>-->
-        <property name="realm" ref="jdbcRealm"/>
+
+        <!-- <property name="realm" ref="jdbcRealm"/>-->
+
+        <property name="authenticator" ref="authenticator"/>
+
+        <property name="realms">
+            <list>
+                <ref bean="jdbcRealm"/>
+                <ref bean="secondRealm"/>
+                <ref bean="authRealm"/>
+            </list>
+        </property>
+    </bean>
+
+    <!--
+        多realm bean ModularRealmAuthenticator
+    -->
+    <bean id="authenticator" class="org.apache.shiro.authc.pam.ModularRealmAuthenticator">
+
+        <!--在做授权的时候因为需要使用到securitryManager因此将这里配置到上面 securityManager中-->
+        <!--<property name="realms">
+            <list>
+                <ref bean="jdbcRealm"/>
+                <ref bean="secondRealm"/>
+            </list>
+        </property>-->
+        <!--如需改变认证策略可以在这里配置-->
+        <!--  <property name="authenticationStrategy">
+              <bean class="org.apache.shiro.authc.pam.AllSuccessfulStrategy"/>
+          </property>-->
     </bean>
 
     <!--
@@ -54,6 +83,8 @@
     Used by the SecurityManager to access security data (users, roles, etc).
          Many other realm implementations can be used too (PropertiesRealm,
          LdapRealm, etc. -->
+
+
     <bean id="jdbcRealm" class="com.ksea.shiro.realms.ShiroRealm">
         <!--  <property name="name" value="jdbcRealm"/>
           <property name="dataSource" ref="dataSource"/>-->
@@ -61,17 +92,41 @@
             加密方式
             Shiro提供了base64和16进制字符串编码/解码的API支持，方便一些编码解码操作。Shiro内部的一些数据的存储/表示都使用了base64和16进制字符串。
 
-        散列算法
-散列算法一般用于生成数据的摘要信息，是一种不可逆的算法，一般适合存储密码之类的数据，常见的散列算法如MD5、SHA等。
-一般进行散列时最好提供一个salt（盐），比如加密密码“admin”，产生的散列值是“21232f297a57a5a743894a0e4a801fc3”，
-可以到一些md5解密网站很容易的通过散列值得到密码“admin”，即如果直接对密码进行散列相对来说破解更容易，
-此时我们可以加一些只有系统知道的干扰数据，如用户名和ID（即盐）；这样散列的对象是“密码+用户名+ID”，这样生成的散列值相对来说更难破解。
+                    散列算法
+            散列算法一般用于生成数据的摘要信息，是一种不可逆的算法，一般适合存储密码之类的数据，常见的散列算法如MD5、SHA等。
+            一般进行散列时最好提供一个salt（盐），比如加密密码“admin”，产生的散列值是“21232f297a57a5a743894a0e4a801fc3”，
+            可以到一些md5解密网站很容易的通过散列值得到密码“admin”，即如果直接对密码进行散列相对来说破解更容易，
+            此时我们可以加一些只有系统知道的干扰数据，如用户名和ID（即盐）；这样散列的对象是“密码+用户名+ID”，这样生成的散列值相对来说更难破解。
         -->
         <property name="credentialsMatcher">
             <bean class="org.apache.shiro.authc.credential.HashedCredentialsMatcher">
                 <property name="hashAlgorithmName" value="MD5"/>
                 <property name="hashIterations" value="1024"/>
                 <!-- true means hex encoded:十六进制加密, false means base64 encoded:基于64位加密 -->
+                <property name="storedCredentialsHexEncoded" value="false"/>
+            </bean>
+        </property>
+    </bean>
+
+
+    <bean id="secondRealm" class="com.ksea.shiro.realms.SecondRealm">
+
+        <property name="credentialsMatcher">
+            <bean class="org.apache.shiro.authc.credential.HashedCredentialsMatcher">
+                <property name="hashAlgorithmName" value="SHA-256"/>
+                <property name="hashIterations" value="1024"/>
+                <property name="storedCredentialsHexEncoded" value="false"/>
+            </bean>
+        </property>
+    </bean>
+
+
+    <bean id="authRealm" class="com.ksea.shiro.realms.AuthRealm">
+
+        <property name="credentialsMatcher">
+            <bean class="org.apache.shiro.authc.credential.HashedCredentialsMatcher">
+                <property name="hashAlgorithmName" value="SHA-256"/>
+                <property name="hashIterations" value="1024"/>
                 <property name="storedCredentialsHexEncoded" value="false"/>
             </bean>
         </property>
@@ -156,6 +211,10 @@
                 /s/login = anon
                 # allow WebStart to pull the jars for the swing app:
                 /*.jar = anon
+
+                /home/admin/**=roles[admin]
+                /home/user/**=roles[user]
+
                 # everything else requires authentication:
                 /** = authc
             </value>

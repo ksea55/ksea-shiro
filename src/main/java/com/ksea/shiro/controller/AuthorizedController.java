@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @RequestMapping("auth")
 public class AuthorizedController {
     //无权限访问页面
-    @RequestMapping(value = "/unauth",method = RequestMethod.GET)
+    @RequestMapping(value = "unauthorized",method = RequestMethod.GET)
     public String unauthIndex(){
-        return "";
+        return "auth/unauthorized";
     }
 }
